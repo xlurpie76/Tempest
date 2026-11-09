@@ -1,7 +1,6 @@
 # Tempest Hotel
 
-i love hotels i love coding i love computer science i love creating
-hotel 
+A Reservation system that allows for selecting and booking for hotel rooms.
 
 **Tempest Hotel Reservation System**
 
