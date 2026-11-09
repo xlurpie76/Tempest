@@ -1,7 +1,7 @@
 # Tempest Hotel
 
 i love hotels i love coding i love computer science i love creating
-
+hotel 
 
 **Tempest Hotel Reservation System**
 
