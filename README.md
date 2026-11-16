@@ -1,10 +1,10 @@
-# Tempest Hotel
+# Tempest hotel
 
 A Reservation system that allows for selecting and booking for hotel rooms.
 
-**Tempest Hotel Reservation System**
+**Tempest hotel Reservation System**
 
-**Actors:**         Guests, Hotel, Staff, Admin
+**Actors:**         Guests, hotel, Staff, Admin
 
 **Use Cases:**      Search rooms, book room, cancel booking, check-in/check-out
 
