@@ -54,6 +54,7 @@ public class RoomListPanel {
                 "2 pax",
                 "35 sqm",
                 "Room with one king-sized bed and views of Tempest.",
+                "5,005php",
                 true
         ));
 
@@ -63,6 +64,7 @@ public class RoomListPanel {
                 "4 pax",
                 "45 sqm",
                 "Spacious room with two queen-sized beds.",
+                "555,551php",
                 true
         ));
 
@@ -72,6 +74,7 @@ public class RoomListPanel {
                 "2 pax",
                 "50 sqm",
                 "Spacious room with two queen-sized beds.",
+                "500,000php",
                 true
         ));
 
@@ -81,6 +84,7 @@ public class RoomListPanel {
                 "2 pax",
                 "60 sqm",
                 "Luxury suite with a spacious living area.",
+                "50,000php",
                 false
         ));
 
@@ -89,7 +93,8 @@ public class RoomListPanel {
                 "1 Kurt Sized Bed",
                 "50 pax",
                 "900 sqm",
-                "Premium accommodation with 1 discord server per square meter.",
+                "Premium accommodation with 1 discord server per square meter, and minecraft deceasedcraft server running on amd r5 5600 + 6gb of ram we are so poor rn fuck the ramapocalypse",
+                "five dabloons",
                 false
         ));
     }
@@ -144,6 +149,7 @@ public class RoomListPanel {
         infoPanel.add(new JLabel(room.getBedType()));
         infoPanel.add(new JLabel(room.getCapacity()));
         infoPanel.add(new JLabel(room.getRoomSize()));
+        infoPanel.add(new JLabel(room.getPrice()));
 
         // Description
         JPanel centerPanel = new JPanel(
@@ -154,6 +160,7 @@ public class RoomListPanel {
 
         JLabel descriptionLabel = new JLabel(
                 "<html>" + room.getDescription() + "</html>"
+
         );
 
         centerPanel.add(
@@ -171,6 +178,7 @@ public class RoomListPanel {
         JLabel availabilityLabel = new JLabel(
                 room.isAvailable() ? "Available" : "Unavailable"
         );
+
 
         JButton selectButton = new JButton("Select");
 
@@ -191,9 +199,10 @@ public class RoomListPanel {
         // Select button action
         selectButton.addActionListener(e -> {
 
+            // this just shows the message so yeah idk
             JOptionPane.showMessageDialog(
                     rootPanel,
-                    "You selected: " + room.getName()
+                    "Opens calendar on the right yall implement this part idk (line 204 in RoomListPanel.java)"
             );
 
         });
