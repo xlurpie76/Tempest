@@ -8,13 +8,12 @@ public class Room {
     private String capacity;
     private String roomSize;
     private String description;
-    private String price;
     private boolean available;
 
     // Constructor
     public Room(String name, String bedType,
                 String capacity, String roomSize,
-                String description, String price, boolean available) {
+                String description, boolean available) {
 
         this.name = name;
         this.bedType = bedType;
@@ -22,7 +21,6 @@ public class Room {
         this.roomSize = roomSize;
         this.description = description;
         this.available = available;
-        this.price = price;
     }
 
     // Getters
@@ -45,7 +43,6 @@ public class Room {
     public String getDescription() {
         return description;
     }
-    public String getPrice() { return price; }
 
     public boolean isAvailable() {
         return available;
