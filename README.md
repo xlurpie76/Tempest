@@ -8,7 +8,7 @@ A Reservation system that allows for selecting and booking for hotel rooms.
 
 **Use Cases:**      Search rooms, book room, cancel booking, check-in/check-out
 
-**Sequence Idea:**  Room-search -> selection -> booking -> payment -> confirmation
+**Sequence Idea:**  Room-search -> Choose the Date -> Fill out Contact Info Form -> Payment Details -> Receipt
 
-**Class Concepts:** Room, Reservation, Guest, Payment, Review
+**Class Concepts:** Room List, Calendar, Fill Out Form, Payment Details
 
