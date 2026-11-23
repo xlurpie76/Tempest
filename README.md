@@ -16,8 +16,6 @@ A hotel reservation system that allows guests to browse available rooms, select 
 - Enter guest contact information
 - Provide payment details
 - Generate and view booking receipts
-- Cancel reservations
-- Manage guest check-in and check-out
 
 **Sequence Idea:**
 
