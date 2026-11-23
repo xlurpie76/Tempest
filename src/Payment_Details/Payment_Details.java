@@ -1,13 +1,17 @@
-package Payment_Details;
-
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
 
-public class Payment_Details {
+public class Payment_Details extends JFrame {
     private JPanel pnlMAIN;
     private JPanel pnl1;
     private JLabel jlPaymentDetails;
@@ -25,16 +29,33 @@ public class Payment_Details {
     private JButton mastercardButton;
     private JButton processPaymentButton;
     private JPanel prcspaymentpnl;
+    private JLabel HolderNameError1;
+    private JLabel CdNumError1;
+    private JLabel ExpiryDateError1;
+    private JLabel CVVHolderError1;
+
     private Payment selectedPaymentMethod = null;
     private double totalPrice = 0.0;
-    private Runnable onPaymentSuccessAction;
+
+    private String actualCvvDigits = "";
+    private boolean updatingCvvDisplay = false;
+
+    private static final String NAME_HINT = "Name on Card";
+    private static final String CARD_HINT = "Card Number";
+    private static final String EXPIRY_HINT = "MM/YY";
+    private static final String CVV_HINT = "CVC/CVV";
+
+    private static final Color HINT_GRAY = new Color(150, 150, 150);
+    private static final Color INPUT_BLACK = Color.BLACK;
+    private static final Color ERROR_RED = new Color(255, 18, 0);
+    private static final Color NORMAL_BORDER_COLOR = new Color(150, 150, 150);
 
     public Payment_Details() {
-        this(null);
-    }
-
-    public Payment_Details(Runnable onPaymentSuccessAction) {
-        this.onPaymentSuccessAction = onPaymentSuccessAction;
+        JFrame frame = new JFrame("CHECKOUT");
+        frame.setContentPane(pnlMAIN);
+        frame.setSize(400, 495);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         jlPaymentDetails.setBorder(
                 BorderFactory.createCompoundBorder(
@@ -43,36 +64,47 @@ public class Payment_Details {
                 )
         );
 
-        cdetailsPanel.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(new Color(150, 150, 150), 1), "CardDetails",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Arial", Font.PLAIN, 20),
-                        Color.DARK_GRAY
-                )
+        TitledBorder cdetailsBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(0, 0, 0), 1),
+                "CardDetails",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial Black", Font.PLAIN, 20),
+                Color.BLACK
         );
-        pymentmethodpnl.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(new Color(150, 150, 150), 1),
-                        "Payment Method",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font("Arial", Font.PLAIN, 12),
-                        Color.DARK_GRAY
-                )
+        cdetailsBorder.setTitleColor(Color.BLACK);
+        cdetailsPanel.setBorder(cdetailsBorder);
+
+        TitledBorder pymentmethodBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(NORMAL_BORDER_COLOR, 1),
+                "Payment Method",
+                TitledBorder.LEFT,
+                TitledBorder.TOP,
+                new Font("Arial Black", Font.BOLD, 12),
+                Color.BLACK
         );
+        pymentmethodBorder.setTitleColor(Color.BLACK);
+        pymentmethodpnl.setBorder(pymentmethodBorder);
+
+        VISAButton.setBackground(Color.WHITE);
+        mastercardButton.setBackground(Color.WHITE);
+
+        clearAllErrors();
+        setupPlaceholder(tfHolderName, NAME_HINT);
+        setupPlaceholder(tfCnumber, CARD_HINT);
+        setupPlaceholder(textField3, EXPIRY_HINT);
+        setupExpiryInputFilter(textField3);
+        setupMaskedCvvField();
 
         VISAButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 selectedPaymentMethod = new Visa();
 
-                // Highlight VISA, reset Mastercard
-                VISAButton.setBackground(new Color(173, 216, 230));
-                mastercardButton.setBackground(null);
+                VISAButton.setBackground(Color.CYAN);
+                mastercardButton.setBackground(Color.WHITE);
 
-                JOptionPane.showMessageDialog(pnlMAIN, "VISA selected.");
+                JOptionPane.showMessageDialog(frame, "VISA selected.");
             }
         });
 
@@ -81,96 +113,367 @@ public class Payment_Details {
             public void actionPerformed(ActionEvent e) {
                 selectedPaymentMethod = new Mastercard();
 
-                // Highlight Mastercard, reset VISA
-                mastercardButton.setBackground(new Color(173, 216, 230));
-                VISAButton.setBackground(null);
+                mastercardButton.setBackground(Color.CYAN);
+                VISAButton.setBackground(Color.WHITE);
 
-                JOptionPane.showMessageDialog(pnlMAIN, "Mastercard selected.");
+                JOptionPane.showMessageDialog(frame, "Mastercard selected.");
             }
         });
 
         processPaymentButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                clearAllErrors();
+
                 try {
-                    // 1. Payment Method check
                     if (selectedPaymentMethod == null) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Please select a payment method (VISA or Mastercard).", "Payment Method Error", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(frame, "Please select a payment method (VISA or Mastercard).", "Payment Method Error", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
 
-                    String cardNumber = tfCnumber.getText().trim();
-                    String holderName = tfHolderName.getText().trim();
-                    String expiryDate = textField3.getText().trim();
-                    String cvvStr = textField4.getText().trim();
+                    String holderName = getFieldInput(tfHolderName, NAME_HINT);
+                    String cardNumber = getFieldInput(tfCnumber, CARD_HINT);
+                    String expiryDate = getFieldInput(textField3, EXPIRY_HINT);
+                    String cvvStr = getCvvInput();
 
-                    // 2. Individual empty checks
-                    if (cardNumber.isEmpty()) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Card Number cannot be empty.", "Card Number Error", JOptionPane.ERROR_MESSAGE);
-                        tfCnumber.requestFocus();
-                        return;
-                    }
+                    boolean hasError = false;
 
                     if (holderName.isEmpty()) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Card Holder Name cannot be empty.", "Name Error", JOptionPane.ERROR_MESSAGE);
-                        tfHolderName.requestFocus();
-                        return;
+                        setHolderNameError1("Please enter the cardholder name.");
+                        if (!hasError) {
+                            tfHolderName.requestFocus();
+                        }
+                        hasError = true;
+                    } else if (holderName.matches("\\d+")) {
+                        setHolderNameError1("invalid name");
+                        if (!hasError) {
+                            tfHolderName.requestFocus();
+                            tfHolderName.selectAll();
+                        }
+                        hasError = true;
+                    }
+
+                    if (cardNumber.isEmpty()) {
+                        setCardNumberError("Card Number can't be empty.");
+                        if (!hasError) {
+                            tfCnumber.requestFocus();
+                        }
+                        hasError = true;
+                    } else if (!cardNumber.matches("\\d+")) {
+                        setCardNumberError("Card Number must contain numbers only.");
+                        if (!hasError) {
+                            tfCnumber.requestFocus();
+                            tfCnumber.selectAll();
+                        }
+                        hasError = true;
                     }
 
                     if (expiryDate.isEmpty()) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Expiry Date cannot be empty.", "Expiry Date Error", JOptionPane.ERROR_MESSAGE);
-                        textField3.requestFocus();
-                        return;
+                        setExpiryDateError("Expiry Date can't be empty");
+                        if (!hasError) {
+                            textField3.requestFocus();
+                        }
+                        hasError = true;
+                    } else if (!isValidExpiry(expiryDate)) {
+                        setExpiryDateError("Use MM/YY (month 01-12).");
+                        if (!hasError) {
+                            textField3.requestFocus();
+                            textField3.selectAll();
+                        }
+                        hasError = true;
                     }
 
                     if (cvvStr.isEmpty()) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "CVV cannot be empty.", "CVV Error", JOptionPane.ERROR_MESSAGE);
-                        textField4.requestFocus();
+                        setCvvError("CVV/CVC can't be empty");
+                        if (!hasError) {
+                            textField4.requestFocus();
+                        }
+                        hasError = true;
+                    } else if (!cvvStr.matches("\\d{3}")) {
+                        setCvvError("Must be 3 numbers only.");
+                        if (!hasError) {
+                            textField4.requestFocus();
+                            textField4.selectAll();
+                        }
+                        hasError = true;
+                    }
+
+                    if (hasError) {
                         return;
                     }
 
-                    // 3. Validate that Card Number contains numbers only (before parsing CVV)
-                    if (!cardNumber.matches("\\d+")) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Card Number must contain numbers only.", "Card Number Error", JOptionPane.ERROR_MESSAGE);
-                        tfCnumber.requestFocus();
-                        tfCnumber.selectAll();
-                        return;
-                    }
+                    int cvv = Integer.parseInt(cvvStr);
 
-                    // 4. Parse CVV safely
-                    int cvv;
-                    try {
-                        cvv = Integer.parseInt(cvvStr);
-                    } catch (NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "CVV must contain numbers only.", "CVV Error", JOptionPane.ERROR_MESSAGE);
-                        textField4.requestFocus();
-                        textField4.selectAll();
-                        return;
-                    }
-
-                    // 5. Run full validation in Visa / Mastercard class
                     CardDetails card = new CardDetails(cardNumber, holderName, expiryDate, cvv);
                     boolean success = selectedPaymentMethod.processPayment(totalPrice, card);
 
                     if (success) {
-                        JOptionPane.showMessageDialog(pnlMAIN, "Payment successfully processed!", "Success", JOptionPane.INFORMATION_MESSAGE);
-                        if (onPaymentSuccessAction != null) {
-                            onPaymentSuccessAction.run();
-                        }
+                        JOptionPane.showMessageDialog(frame, "Payment successfully processed!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                        frame.dispose();
                     }
 
                 } catch (IllegalArgumentException ex) {
-                    JOptionPane.showMessageDialog(pnlMAIN, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, ex.getMessage(), "Validation Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        frame.setVisible(true);
+    }
+
+    private void setupMaskedCvvField() {
+        showCvvHint();
+        setupCvvInputFilter(textField4);
+
+        textField4.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (actualCvvDigits.isEmpty() && textField4.getForeground().equals(HINT_GRAY)) {
+                    setCvvDisplay("");
+                    textField4.setForeground(INPUT_BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (actualCvvDigits.isEmpty()) {
+                    showCvvHint();
                 }
             }
         });
     }
 
-    public JPanel getRootPanel() {
-        return pnlMAIN;
+    private void showCvvHint() {
+        actualCvvDigits = "";
+        setCvvDisplay(CVV_HINT);
+        textField4.setForeground(HINT_GRAY);
     }
 
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
+    private void setCvvDisplay(String text) {
+        updatingCvvDisplay = true;
+        try {
+            textField4.setText(text);
+        } finally {
+            updatingCvvDisplay = false;
+        }
+    }
+
+    private String maskDigits(String digits) {
+        return "*".repeat(digits.length());
+    }
+
+    private String getCvvInput() {
+        return actualCvvDigits.trim();
+    }
+
+    private void setupCvvInputFilter(JTextField field) {
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+            private void syncFromCandidate(FilterBypass fb, String candidate) throws BadLocationException {
+                if (updatingCvvDisplay) {
+                    fb.replace(0, fb.getDocument().getLength(), candidate, null);
+                    return;
+                }
+
+                if (candidate.equals(CVV_HINT)) {
+                    actualCvvDigits = "";
+                    setCvvDisplay(CVV_HINT);
+                    field.setForeground(HINT_GRAY);
+                    return;
+                }
+
+                StringBuilder nextDigits = new StringBuilder();
+                int digitIndex = 0;
+
+                for (int i = 0; i < candidate.length(); i++) {
+                    char ch = candidate.charAt(i);
+                    if (Character.isDigit(ch)) {
+                        nextDigits.append(ch);
+                    } else if (ch == '*') {
+                        if (digitIndex < actualCvvDigits.length()) {
+                            nextDigits.append(actualCvvDigits.charAt(digitIndex));
+                            digitIndex++;
+                        }
+                    } else {
+                        return;
+                    }
+                }
+
+                if (nextDigits.length() > 3) {
+                    return;
+                }
+
+                actualCvvDigits = nextDigits.toString();
+                String masked = maskDigits(actualCvvDigits);
+
+                setCvvDisplay(masked);
+                field.setForeground(INPUT_BLACK);
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) {
+                    return;
+                }
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String candidate = current.substring(0, offset) + string + current.substring(offset);
+                syncFromCandidate(fb, candidate);
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String replacement = (text == null) ? "" : text;
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String candidate = current.substring(0, offset) + replacement + current.substring(offset + length);
+                syncFromCandidate(fb, candidate);
+            }
+        });
+    }
+
+    private boolean isValidExpiry(String expiryDate) {
+        if (!expiryDate.matches("\\d{2}/\\d{2}")) {
+            return false;
+        }
+        String[] parts = expiryDate.split("/");
+        int month = Integer.parseInt(parts[0]);
+        return month >= 1 && month <= 12;
+    }
+
+    private void setupExpiryInputFilter(JTextField field) {
+        ((AbstractDocument) field.getDocument()).setDocumentFilter(new DocumentFilter() {
+            private String formatWithAutoSlash(String candidate) {
+                if (candidate.equals(EXPIRY_HINT)) {
+                    return EXPIRY_HINT;
+                }
+
+                String digitsOnly = candidate.replace("/", "");
+                if (!digitsOnly.matches("\\d*")) {
+                    return null;
+                }
+
+                if (digitsOnly.length() > 4) {
+                    return null;
+                }
+
+                StringBuilder formatted = new StringBuilder();
+                for (int i = 0; i < digitsOnly.length(); i++) {
+                    if (i == 2) {
+                        formatted.append('/');
+                    }
+                    formatted.append(digitsOnly.charAt(i));
+                }
+
+                if (candidate.endsWith("/") && digitsOnly.length() == 2) {
+                    formatted.append('/');
+                }
+
+                return formatted.toString();
+            }
+
+            private void applyFormattedText(FilterBypass fb, String formatted) throws BadLocationException {
+                fb.replace(0, fb.getDocument().getLength(), formatted, null);
+            }
+
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string == null) {
+                    return;
+                }
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String candidate = current.substring(0, offset) + string + current.substring(offset);
+                String formatted = formatWithAutoSlash(candidate);
+                if (formatted != null) {
+                    applyFormattedText(fb, formatted);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                String replacement = (text == null) ? "" : text;
+                String current = fb.getDocument().getText(0, fb.getDocument().getLength());
+                String candidate = current.substring(0, offset) + replacement + current.substring(offset + length);
+                String formatted = formatWithAutoSlash(candidate);
+                if (formatted != null) {
+                    applyFormattedText(fb, formatted);
+                }
+            }
+        });
+    }
+
+    private void setupPlaceholder(JTextField field, String hint) {
+        field.setText(hint);
+        field.setForeground(HINT_GRAY);
+
+        field.addFocusListener(new FocusAdapter() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (field.getText().equals(hint) && field.getForeground().equals(HINT_GRAY)) {
+                    field.setText("");
+                    field.setForeground(INPUT_BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (field.getText().trim().isEmpty()) {
+                    field.setText(hint);
+                    field.setForeground(HINT_GRAY);
+                }
+            }
+        });
+    }
+
+    private String getFieldInput(JTextField field, String hint) {
+        String value = field.getText().trim();
+        if (value.equals(hint) && field.getForeground().equals(HINT_GRAY)) {
+            return "";
+        }
+        return value;
+    }
+
+    private void showErrorLabel(JLabel label, JTextField field, String message) {
+        if (field != null) {
+            field.setBorder(BorderFactory.createLineBorder(ERROR_RED, 2));
+        }
+        if (label != null) {
+            label.setForeground(ERROR_RED);
+            label.setText(message);
+            label.setVisible(true);
+        }
+    }
+
+    private void hideErrorLabel(JLabel label, JTextField field) {
+        if (field != null) {
+            field.setBorder(BorderFactory.createLineBorder(NORMAL_BORDER_COLOR, 1));
+        }
+        if (label != null) {
+            label.setVisible(false);
+        }
+    }
+
+    private void setHolderNameError1(String message) {
+        showErrorLabel(HolderNameError1, tfHolderName, message);
+    }
+
+    private void setCardNumberError(String message) {
+        showErrorLabel(CdNumError1, tfCnumber, message);
+    }
+
+    private void setExpiryDateError(String message) {
+        showErrorLabel(ExpiryDateError1, textField3, message);
+    }
+
+    private void setCvvError(String message) {
+        showErrorLabel(CVVHolderError1, textField4, message);
+    }
+
+    private void clearAllErrors() {
+        hideErrorLabel(HolderNameError1, tfHolderName);
+        hideErrorLabel(CdNumError1, tfCnumber);
+        hideErrorLabel(ExpiryDateError1, textField3);
+        hideErrorLabel(CVVHolderError1, textField4);
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(Payment_Details::new);
     }
 }
