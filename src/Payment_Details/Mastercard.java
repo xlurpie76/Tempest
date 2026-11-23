@@ -1,4 +1,4 @@
-class Mastercard implements Payment {
+class Mastercard {
     @Override
     public boolean processPayment(double totalPrice, CardDetails card) {
 

@@ -1,4 +1,4 @@
-class Visa implements Payment {
+class Visa {
     @Override
     public boolean processPayment(double totalPrice, CardDetails card) {
         if (card == null) {

@@ -47,8 +47,6 @@ public class ReservationSystem extends JFrame {
         }
         comboBox3.setModel(new DefaultComboBoxModel<>(years));
     }
-
-    // Helper method to make the form launchable from Main
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
