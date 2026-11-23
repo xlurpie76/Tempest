@@ -1,4 +1,6 @@
-class Visa {
+package Payment_Details;
+class Visa implements Payment {
+
     @Override
     public boolean processPayment(double totalPrice, CardDetails card) {
         if (card == null) {
