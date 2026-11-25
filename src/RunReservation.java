@@ -27,6 +27,15 @@ public class RunReservation {
             RoomListPanel roomList = new RoomListPanel();
             Calendar calendar = new Calendar();
 
+            Runnable updateTotal = () -> roomList.setTotalText(
+                    String.format(
+                    "%d days | Total: %.2f",
+                    calendar.getNumberOfDays(), calendar.getTotalPrice())
+            );
+
+            calendar.setOnSelectionChanged(updateTotal);
+            updateTotal.run(); // show the initial 0 state
+
             JPanel calendarPnl = roomList.getCalendarPnl();
             calendarPnl.setLayout(new BorderLayout());
             calendarPnl.add(calendar.getRootPanel(), BorderLayout.CENTER);

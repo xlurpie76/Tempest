@@ -87,6 +87,16 @@ public class Calendar {
         showMonth(currentMonth);
     }
 
+    private Runnable onSelectionChanged;
+
+    public void setOnSelectionChanged(Runnable r) {
+        this.onSelectionChanged = r;
+    }
+
+    private void fireChanged() {
+        if (onSelectionChanged != null) onSelectionChanged.run();
+    }
+
     /** Returns the full calendar panel so it can be embedded inside another JFrame or split layout. */
     public JPanel getRootPanel() {
         return rootPanel;
@@ -98,6 +108,7 @@ public class Calendar {
     public void setBasePrice(double basePrice) {
         this.basePriceSupplier = () -> basePrice;
         refresh();
+        fireChanged();
     }
 
     /**
@@ -107,6 +118,7 @@ public class Calendar {
     public void setBasePriceSupplier(DoubleSupplier supplier) {
         this.basePriceSupplier = supplier;
         refresh();
+        fireChanged();
     }
 
     /** Current base price as supplied by the connected variable. */
@@ -260,6 +272,7 @@ public class Calendar {
             endDate = null;
             numberOfDays = 0;
             showMonth(currentMonth);
+            fireChanged();
         } else {
             endDate = date;
             numberOfDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
@@ -267,6 +280,7 @@ public class Calendar {
             if (onRangeSelected != null) {
                 onRangeSelected.accept(startDate, endDate);
             }
+            fireChanged();
         }
     }
 

@@ -14,9 +14,10 @@ public class RoomListPanel {
     private JLabel titleLabel;
     private JScrollPane roomScrollPane;
     private JPanel roomContainer;
-    private JButton submitButton;
+    private JButton BOOKButton;
     private JPanel calendarPnl;
     private JPanel totalPnl;
+    private JLabel jlPrice;
 
     // Stores all hotel rooms
     private ArrayList<Room> rooms = new ArrayList<>();
@@ -61,6 +62,10 @@ public class RoomListPanel {
     // The room the user last selected, or null
     public Room getSelectedRoom() {
         return selectedRoom;
+    }
+
+    public void setTotalText(String text) {
+        jlPrice.setText(text);
     }
 
     // Add hotel rooms (last argument of each is the placeholder price per night)
