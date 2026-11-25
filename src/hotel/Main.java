@@ -15,6 +15,8 @@ public class Main {
         mainFrame.repaint();
     }
 
+
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             mainFrame = new JFrame("Veldorra Hotel");
@@ -43,6 +45,8 @@ public class Main {
 
             mainFrame.setContentPane(roomAndCalendarPanel);
             mainFrame.setVisible(true);
+
+            roomList.setOnRoomSelected(room -> calendar.setBasePrice(room.getPricePerNight()));
         });
     }
 }

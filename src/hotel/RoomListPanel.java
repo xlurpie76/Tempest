@@ -19,6 +19,9 @@ public class RoomListPanel {
     // Stores all hotel rooms
     private ArrayList<Room> rooms = new ArrayList<>();
 
+    // The room the user last selected (null until one is chosen)
+    private Room selectedRoom;
+
     // Callback triggered when a user clicks "Select" on an available room
     private Consumer<Room> onRoomSelected;
 
@@ -48,12 +51,17 @@ public class RoomListPanel {
         displayRooms();
     }
 
-    // Set what happens in Main when a room is selected (e.g., switch to ContactInfoForm)
+    // Set what happens in Main when a room is selected (e.g., update the calendar price)
     public void setOnRoomSelected(Consumer<Room> onRoomSelected) {
         this.onRoomSelected = onRoomSelected;
     }
 
-    // Add hotel rooms
+    // The room the user last selected, or null
+    public Room getSelectedRoom() {
+        return selectedRoom;
+    }
+
+    // Add hotel rooms (last argument of each is the placeholder price per night)
     private void loadRooms() {
 
         rooms.add(new Room(
@@ -62,7 +70,8 @@ public class RoomListPanel {
                 "2 pax",
                 "35 sqm",
                 "Room with one king-sized bed and views of Tempest.",
-                true
+                true,
+                3500.0
         ));
 
         rooms.add(new Room(
@@ -71,7 +80,8 @@ public class RoomListPanel {
                 "4 pax",
                 "45 sqm",
                 "Spacious room with two queen-sized beds.",
-                true
+                true,
+                5000.0
         ));
 
         rooms.add(new Room(
@@ -80,7 +90,8 @@ public class RoomListPanel {
                 "2 pax",
                 "50 sqm",
                 "Spacious room with two queen-sized beds.",
-                true
+                true,
+                4500.0
         ));
 
         rooms.add(new Room(
@@ -89,7 +100,8 @@ public class RoomListPanel {
                 "2 pax",
                 "60 sqm",
                 "Luxury suite with a spacious living area.",
-                false
+                false,
+                9000.0
         ));
 
         rooms.add(new Room(
@@ -98,7 +110,8 @@ public class RoomListPanel {
                 "50 pax",
                 "900 sqm",
                 "Premium accommodation with 1 discord server per square meter.",
-                false
+                false,
+                50000.0
         ));
     }
 
@@ -146,12 +159,15 @@ public class RoomListPanel {
 
         // Room information
         JPanel infoPanel = new JPanel(
-                new GridLayout(1, 3, 10, 0)
+                new GridLayout(1, 4, 10, 0)
         );
 
         infoPanel.add(new JLabel(room.getBedType()));
         infoPanel.add(new JLabel(room.getCapacity()));
         infoPanel.add(new JLabel(room.getRoomSize()));
+        infoPanel.add(new JLabel(
+                String.format("%.2f / night", room.getPricePerNight())
+        ));
 
         // Description
         JPanel centerPanel = new JPanel(
@@ -198,6 +214,8 @@ public class RoomListPanel {
 
         // Select button action
         selectButton.addActionListener(e -> {
+
+            selectedRoom = room;
 
             JOptionPane.showMessageDialog(
                     rootPanel,
@@ -257,6 +275,10 @@ public class RoomListPanel {
     public void removeRoom(Room room) {
 
         rooms.remove(room);
+
+        if (room == selectedRoom) {
+            selectedRoom = null;
+        }
 
         displayRooms();
     }

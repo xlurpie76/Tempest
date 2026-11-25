@@ -1,4 +1,3 @@
-
 package hotel;
 
 public class Room {
@@ -9,11 +8,13 @@ public class Room {
     private String roomSize;
     private String description;
     private boolean available;
+    private double pricePerNight;
 
     // Constructor
     public Room(String name, String bedType,
                 String capacity, String roomSize,
-                String description, boolean available) {
+                String description, boolean available,
+                double pricePerNight) {
 
         this.name = name;
         this.bedType = bedType;
@@ -21,6 +22,7 @@ public class Room {
         this.roomSize = roomSize;
         this.description = description;
         this.available = available;
+        this.pricePerNight = pricePerNight;
     }
 
     // Getters
@@ -48,8 +50,16 @@ public class Room {
         return available;
     }
 
-    // Setter
+    public double getPricePerNight() {
+        return pricePerNight;
+    }
+
+    // Setters
     public void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    public void setPricePerNight(double pricePerNight) {
+        this.pricePerNight = pricePerNight;
     }
 }
