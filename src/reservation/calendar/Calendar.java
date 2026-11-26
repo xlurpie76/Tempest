@@ -95,6 +95,7 @@ public class Calendar {
 
     private void fireChanged() {
         if (onSelectionChanged != null) onSelectionChanged.run();
+
     }
 
     /** Returns the full calendar panel so it can be embedded inside another JFrame or split layout. */

@@ -38,6 +38,7 @@ public class Payment_Details extends JPanel {
     private JLabel CdNumError1;
     private JLabel ExpiryDateError1;
     private JLabel CVVHolderError1;
+    private JLabel jlPrice;
     // Optional: if you add a JLabel bound in your .form file for the lock icon, uncomment below:
     // private JLabel lockLabel;
 
@@ -276,6 +277,8 @@ public class Payment_Details extends JPanel {
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
+        jlPrice.setText(String.format("%.2f", totalPrice));
+
     }
 
     private Component getParentComponent() {

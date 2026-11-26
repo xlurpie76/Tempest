@@ -1,5 +1,6 @@
 import reservation.calendar.Calendar;
 import reservation.contact.ContactInfoForm;
+import reservation.payment_details.Payment;
 import reservation.payment_details.Payment_Details;
 import reservation.room.RoomListPanel;
 
@@ -8,12 +9,14 @@ import java.awt.*;
 
 public class RunReservation {
     private static JFrame mainFrame;
+    private static double totalPrice;
 
     public static void showPanel(JPanel panel) {
         mainFrame.setContentPane(panel);
         mainFrame.revalidate();
         mainFrame.repaint();
     }
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -60,7 +63,11 @@ public class RunReservation {
             });
 
             // BOOKButton (after validating a room is selected) opens ContactInfoForm
-            roomList.setOnBookClicked(() -> showPanel(contactInfoForm.getRootPanel()));
+            roomList.setOnBookClicked(() -> {
+                paymentDetails.setTotalPrice(calendar.getTotalPrice());
+                System.out.println("HOY HANO NI PRINT! MAN KO!!!");
+                showPanel(contactInfoForm.getRootPanel());
+            });
 
             mainFrame.setContentPane(roomAndCalendarPanel);
             mainFrame.setVisible(true);
