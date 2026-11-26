@@ -1,5 +1,7 @@
 package reservation.payment_details;
 
+import reservation.Receipt.Receipt_UI;
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.AbstractDocument;
@@ -15,6 +17,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.net.URL;
+import java.time.LocalDate;
 
 public class Payment_Details extends JPanel {
     private JPanel pnlMAIN;
@@ -45,6 +48,12 @@ public class Payment_Details extends JPanel {
     private Payment selectedPaymentMethod = null;
     private double totalPrice = 0.0;
     private final Runnable onPaymentSuccess;
+
+    private String guestName = "";
+    private String guestPhone = "";
+    private String guestEmail = "";
+    private LocalDate checkInDate;
+    private LocalDate checkOutDate;
 
     private String actualCvvDigits = "";
     private boolean updatingCvvDisplay = false;
@@ -224,6 +233,19 @@ public class Payment_Details extends JPanel {
                                 "Success",
                                 JOptionPane.INFORMATION_MESSAGE
                         );
+
+                        String receiptName = (guestName != null && !guestName.isBlank()) ? guestName : holderName;
+                        Receipt_UI receiptFrame = new Receipt_UI();
+                        receiptFrame.setReceiptDetails(
+                                receiptName,
+                                guestPhone,
+                                guestEmail,
+                                LocalDate.now(),
+                                checkInDate,
+                                checkOutDate
+                        );
+                        receiptFrame.setVisible(true);
+
                         resetForm();
                         if (onPaymentSuccess != null) {
                             onPaymentSuccess.run();
@@ -277,8 +299,20 @@ public class Payment_Details extends JPanel {
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
-        jlPrice.setText(String.format("%.2f", totalPrice));
+        if (jlPrice != null) {
+            jlPrice.setText(String.format("%.2f", totalPrice));
+        }
+    }
 
+    public void setGuestInfo(String fullName, String phoneNum, String emailAdd) {
+        this.guestName = fullName != null ? fullName : "";
+        this.guestPhone = phoneNum != null ? phoneNum : "";
+        this.guestEmail = emailAdd != null ? emailAdd : "";
+    }
+
+    public void setStayDates(LocalDate checkInDate, LocalDate checkOutDate) {
+        this.checkInDate = checkInDate;
+        this.checkOutDate = checkOutDate;
     }
 
     private Component getParentComponent() {

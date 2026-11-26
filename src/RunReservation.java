@@ -1,6 +1,5 @@
 import reservation.calendar.Calendar;
 import reservation.contact.ContactInfoForm;
-import reservation.payment_details.Payment;
 import reservation.payment_details.Payment_Details;
 import reservation.room.RoomListPanel;
 
@@ -9,14 +8,12 @@ import java.awt.*;
 
 public class RunReservation {
     private static JFrame mainFrame;
-    private static double totalPrice;
 
     public static void showPanel(JPanel panel) {
         mainFrame.setContentPane(panel);
         mainFrame.revalidate();
         mainFrame.repaint();
     }
-
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -36,7 +33,7 @@ public class RunReservation {
             );
 
             calendar.setOnSelectionChanged(updateTotal);
-            updateTotal.run(); // show the initial 0 state
+            updateTotal.run();
 
             JPanel calendarPnl = roomList.getCalendarPnl();
             calendarPnl.setLayout(new BorderLayout());
@@ -47,26 +44,31 @@ public class RunReservation {
             roomAndCalendarPanel.add(roomList.getRootPanel(), BorderLayout.CENTER);
 
             Payment_Details paymentDetails = new Payment_Details(
-                    () -> showPanel(roomAndCalendarPanel) // Return to start after payment succeeds
+                    () -> showPanel(roomAndCalendarPanel)
             );
 
-            ContactInfoForm contactInfoForm = new ContactInfoForm(
-                    () -> showPanel(roomAndCalendarPanel),          // Back button -> Room + Calendar
-                    () -> showPanel(paymentDetails.getRootPanel())  // Submit button -> Payment screen
+            final ContactInfoForm[] contactRef = new ContactInfoForm[1];
+            contactRef[0] = new ContactInfoForm(
+                    () -> showPanel(roomAndCalendarPanel),
+                    () -> {
+                        paymentDetails.setGuestInfo(
+                                contactRef[0].getFullName(),
+                                contactRef[0].getPhoneNum(),
+                                contactRef[0].getEmailAdd()
+                        );
+                        showPanel(paymentDetails.getRootPanel());
+                    }
             );
 
-
-            // Selecting a room updates the calendar base price & total without leaving the screen
             roomList.setOnRoomSelected(room -> {
                 calendar.setBasePrice(room.getPricePerNight());
                 updateTotal.run();
             });
 
-            // BOOKButton (after validating a room is selected) opens ContactInfoForm
             roomList.setOnBookClicked(() -> {
                 paymentDetails.setTotalPrice(calendar.getTotalPrice());
-                System.out.println("HOY HANO NI PRINT! MAN KO!!!");
-                showPanel(contactInfoForm.getRootPanel());
+                paymentDetails.setStayDates(calendar.getStartDate(), calendar.getEndDate());
+                showPanel(contactRef[0].getRootPanel());
             });
 
             mainFrame.setContentPane(roomAndCalendarPanel);

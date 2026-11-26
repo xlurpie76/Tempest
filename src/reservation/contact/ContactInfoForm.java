@@ -54,6 +54,20 @@ public class ContactInfoForm {
         this.onSubmitSuccessAction = onSubmitSuccessAction;
     }
 
+    public String getFullName() {
+        String first = tfFirstName != null ? tfFirstName.getText().trim() : "";
+        String last = tfLastName != null ? tfLastName.getText().trim() : "";
+        return (first + " " + last).trim();
+    }
+
+    public String getPhoneNum() {
+        return tfPhoneNum != null ? tfPhoneNum.getText().trim() : "";
+    }
+
+    public String getEmailAdd() {
+        return tfEmailAdd != null ? tfEmailAdd.getText().trim() : "";
+    }
+
     private void initLocationData() {
         locationMap = new HashMap<>();
 

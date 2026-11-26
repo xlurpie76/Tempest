@@ -1,6 +1,10 @@
+package reservation.Receipt;
+
+import javax.swing.*;
+import java.awt.*;
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import javax.swing.*;
 
 public class Receipt_UI extends JFrame {
     private static final String UNAVAILABLE = "unavailable";
@@ -11,9 +15,7 @@ public class Receipt_UI extends JFrame {
     private JPanel Wholepnl;
     private JPanel Hrpnl;
     private JPanel JColorBg1;
-    private JPanel JcolorBg2;
 
-    // Static section/heading labels
     private JLabel Namejbl;
     private JLabel contactjbl;
     private JLabel cInjlb;
@@ -21,7 +23,6 @@ public class Receipt_UI extends JFrame {
     private JLabel emjbl;
     private JLabel cOjbl;
 
-    // Dynamic placeholder labels bound from Receipt_UI.form
     private JLabel nmplder;
     private JLabel contactplder;
     private JLabel Emlplder;
@@ -34,9 +35,25 @@ public class Receipt_UI extends JFrame {
         if (pnlMain != null) {
             setContentPane(pnlMain);
         }
-        setSize(320, 320);
+        loadLogoSafely();
+        setSize(420, 360);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    }
+
+    private void loadLogoSafely() {
+        URL logoUrl = getClass().getResource("Logo.png");
+        if (logoUrl == null || Hrpnl == null) {
+            return;
+        }
+        for (Component comp : Hrpnl.getComponents()) {
+            if (comp instanceof JLabel label && label != HRlabel) {
+                ImageIcon raw = new ImageIcon(logoUrl);
+                Image scaled = raw.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH);
+                label.setIcon(new ImageIcon(scaled));
+                break;
+            }
+        }
     }
 
     public JPanel getRootPanel() {
@@ -51,24 +68,12 @@ public class Receipt_UI extends JFrame {
             LocalDate checkInDate,
             LocalDate checkOutDate
     ) {
-        if (nmplder != null) {
-            nmplder.setText(safeText(fullName));
-        }
-        if (contactplder != null) {
-            contactplder.setText(safeText(contactNumber));
-        }
-        if (Emlplder != null) {
-            Emlplder.setText(safeText(email));
-        }
-        if (rdplder != null) {
-            rdplder.setText(formatDate(receiptDate != null ? receiptDate : LocalDate.now()));
-        }
-        if (chkinplder != null) {
-            chkinplder.setText(formatDate(checkInDate));
-        }
-        if (cOplder != null) {
-            cOplder.setText(formatDate(checkOutDate));
-        }
+        if (nmplder != null) nmplder.setText(safeText(fullName));
+        if (contactplder != null) contactplder.setText(safeText(contactNumber));
+        if (Emlplder != null) Emlplder.setText(safeText(email));
+        if (rdplder != null) rdplder.setText(formatDate(receiptDate != null ? receiptDate : LocalDate.now()));
+        if (chkinplder != null) chkinplder.setText(formatDate(checkInDate));
+        if (cOplder != null) cOplder.setText(formatDate(checkOutDate));
     }
 
     private String formatDate(LocalDate date) {
@@ -77,20 +82,5 @@ public class Receipt_UI extends JFrame {
 
     private String safeText(String value) {
         return (value != null && !value.trim().isEmpty()) ? value.trim() : UNAVAILABLE;
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            Receipt_UI receipt = new Receipt_UI();
-            receipt.setReceiptDetails(
-                    null,
-                    "",
-                    "   ",
-                    LocalDate.now(),
-                    null,
-                    null
-            );
-            receipt.setVisible(true);
-        });
     }
 }
