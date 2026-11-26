@@ -15,8 +15,6 @@ public class RunReservation {
         mainFrame.repaint();
     }
 
-
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             mainFrame = new JFrame("Tempest Hotel");
@@ -29,8 +27,9 @@ public class RunReservation {
 
             Runnable updateTotal = () -> roomList.setTotalText(
                     String.format(
-                    "%d days | Total: %.2f",
-                    calendar.getNumberOfDays(), calendar.getTotalPrice())
+                            "%d days | Total: %.2f",
+                            calendar.getNumberOfDays(), calendar.getTotalPrice()
+                    )
             );
 
             calendar.setOnSelectionChanged(updateTotal);
@@ -43,10 +42,9 @@ public class RunReservation {
             JPanel roomAndCalendarPanel = new JPanel(new BorderLayout(12, 0));
             roomAndCalendarPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
             roomAndCalendarPanel.add(roomList.getRootPanel(), BorderLayout.CENTER);
-            calendarPnl.add(calendar.getRootPanel(), BorderLayout.CENTER);
 
             Payment_Details paymentDetails = new Payment_Details(
-                    () -> showPanel(roomAndCalendarPanel) // Optional: return to start after payment succeeds
+                    () -> showPanel(roomAndCalendarPanel) // Return to start after payment succeeds
             );
 
             ContactInfoForm contactInfoForm = new ContactInfoForm(
@@ -54,12 +52,18 @@ public class RunReservation {
                     () -> showPanel(paymentDetails.getRootPanel())  // Submit button -> Payment screen
             );
 
-            roomList.setOnRoomSelected(selectedRoom -> showPanel(contactInfoForm.getRootPanel()));
+
+            // Selecting a room updates the calendar base price & total without leaving the screen
+            roomList.setOnRoomSelected(room -> {
+                calendar.setBasePrice(room.getPricePerNight());
+                updateTotal.run();
+            });
+
+            // BOOKButton (after validating a room is selected) opens ContactInfoForm
+            roomList.setOnBookClicked(() -> showPanel(contactInfoForm.getRootPanel()));
 
             mainFrame.setContentPane(roomAndCalendarPanel);
             mainFrame.setVisible(true);
-
-            roomList.setOnRoomSelected(room -> calendar.setBasePrice(room.getPricePerNight()));
         });
     }
 }

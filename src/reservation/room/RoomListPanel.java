@@ -52,6 +52,22 @@ public class RoomListPanel {
         // Load and display rooms
         loadRooms();
         displayRooms();
+
+        BOOKButton.addActionListener(e -> {
+            if (selectedRoom == null) {
+                JOptionPane.showMessageDialog(
+                        rootPanel,
+                        "Please select an available room first.",
+                        "No Room Selected",
+                        JOptionPane.WARNING_MESSAGE
+                );
+                return;
+            }
+
+            if (onBookClicked != null) {
+                onBookClicked.run();
+            }
+        });
     }
 
     // Set what happens in Main when a room is selected (e.g., update the calendar price)
@@ -288,6 +304,17 @@ public class RoomListPanel {
         }
 
         displayRooms();
+    }
+
+    // Inside RoomListPanel
+    private Runnable onBookClicked;
+
+    public void setOnBookClicked(Runnable onBookClicked) {
+        this.onBookClicked = onBookClicked;
+    }
+
+    public String getTotalText() {
+        return jlPrice != null ? jlPrice.getText() : "";
     }
 
     public JPanel getCalendarPnl() { return calendarPnl;}
